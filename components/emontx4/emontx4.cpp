@@ -43,6 +43,7 @@ void Emontx4Component::dump_config() {
     LOG_SENSOR("  ", "T2", t2_sensor_);
     LOG_SENSOR("  ", "T3", t3_sensor_);
     ESP_LOGI(TAG, "%s", this->startup_text_.c_str());
+    // ESP_LOGI(TAG, this->startup_text_.c_str());
 }
 
 void Emontx4Component::loop() {
