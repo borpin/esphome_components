@@ -53,6 +53,7 @@ class Emontx4Component : public Component, public uart::UARTDevice {
   protected:
     void parse_json_data_();
     void handle_char_(uint8_t c);
+    void send_http_();
 
     Trigger<> *done_trigger_ = new Trigger<>();
 
