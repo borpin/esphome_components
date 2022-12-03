@@ -76,9 +76,14 @@ void Emontx4Component::handle_char_(uint8_t c) {
 }
 
 void Emontx4Component::parse_json_data_(){
-// TODO - add code in to check for exisence of the Data. Possible to specify the sensor
-// without the JSON being available
+    // JsonObject json_obj;
+    // JsonObject json_obj = root.createNestedObject("json_obj");
+
     json::parse_json(this->json_string_, [this](JsonObject json_data) {
+        this->json_obj_["MSG"] = json_data["MSG"];
+        // std::string message = json::build_json(this->json_obj);
+        // std::string message = json::build_json(json_data);
+        
         if (message_number_sensor_ != nullptr) {
             message_number_sensor_->publish_state(json_data["MSG"]);
         }
@@ -161,7 +166,12 @@ void Emontx4Component::parse_json_data_(){
             pulse_count_sensor_->publish_state(json_data["pulse"]);
         }
         if (pulse_energy_sensor_ != nullptr) {
-            pulse_energy_sensor_->publish_state(json_data["pulse"]);
+            // avoid divide zero error
+            if (float(json_data["pulse"]) > 0) {
+                pulse_energy_sensor_->publish_state(float(json_data["pulse"])/this->pulse_scale_);
+            } else {
+                pulse_energy_sensor_->publish_state(float(json_data["pulse"]));
+            }
         }
         if (t1_sensor_ != nullptr) {
             t1_sensor_->publish_state(float(json_data["T1"])*0.1);
@@ -172,6 +182,9 @@ void Emontx4Component::parse_json_data_(){
         if (t3_sensor_ != nullptr) {
             t3_sensor_->publish_state(float(json_data["T3"])*0.1);
         }
+        // if (json_data_sensor_ != nullptr) {
+        //     json_data_sensor_->publish_state(this->json_string_);
+        // }
         this->done_trigger_->trigger();
     });
 }
@@ -180,48 +193,11 @@ void Emontx4Component::send_http_(){
     
 // #include <WiFi.h>
 // #include <HTTPClient.h>
-
-// // Replace with your network credentials
-// const char* ssid = "SSID";
-// const char* password = "PASSKEY";
-
 // String serverName = "https://emoncms.org/input/post";
-
 // String line = "";
 // String data = "";
 // String sub = "";
 // int data_ready = 0;
-
-// void setup() {
-
-//   // Start the Serial Monitor
-//   Serial.begin(115200);
-
-//   Serial1.begin(115200);
-
-//   // Operate in WiFi Station mode
-//   WiFi.mode(WIFI_STA);
-
-//   // Start WiFi with supplied parameters
-//   WiFi.begin(ssid, password);
-
-//   // Print periods on monitor while establishing connection
-//   while (WiFi.status() != WL_CONNECTED) {
-//     delay(500);
-//     Serial.print(".");
-//     delay(500);
-//   }
-
-//   // Connection established
-//   Serial.println("");
-//   Serial.print("Pico W is connected to WiFi network ");
-//   Serial.println(WiFi.SSID());
-
-//   // Print IP Address
-//   Serial.print("Assigned IP Address: ");
-//   Serial.println(WiFi.localIP());
-
-// }
 
 // void loop() {
 

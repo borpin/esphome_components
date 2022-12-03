@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import sensor, uart #, json
+from esphome.components import sensor, uart, text_sensor
 from esphome import automation
 from esphome.const import (
     CONF_ID,
@@ -64,6 +64,8 @@ CONF_T1 = "t1"
 CONF_T2 = "t2"
 CONF_T3 = "t3"
 CONF_ON_DATA = "on_data"
+CONF_JSON_DATA = "json_data"
+CONF_PULSE_SCALE = "pulse_scale"
 
 CONFIG_SCHEMA = (
     cv.Schema(
@@ -237,6 +239,8 @@ CONFIG_SCHEMA = (
                 device_class=DEVICE_CLASS_ENERGY,
                 state_class=STATE_CLASS_TOTAL_INCREASING,
                 accuracy_decimals=0,
+            ).extend(
+                {cv.Optional(CONF_PULSE_SCALE, default=1): cv.int_}
             ),
             cv.Optional(CONF_T1): sensor.sensor_schema(
                 unit_of_measurement=UNIT_CELSIUS,
@@ -382,6 +386,8 @@ async def to_code(config):
     if CONF_PULSE_ENERGY in config:
         sens = await sensor.new_sensor(config[CONF_PULSE_ENERGY])
         cg.add(var.set_pulse_energy_sensor(sens))
+        if CONF_PULSE_SCALE in config[CONF_PULSE_ENERGY]:
+            cg.add(var.set_pulse_scale(config[CONF_PULSE_ENERGY][CONF_PULSE_SCALE]))
 
     if CONF_T1 in config:
         sens = await sensor.new_sensor(config[CONF_T1])
