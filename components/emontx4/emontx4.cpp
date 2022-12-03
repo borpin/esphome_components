@@ -76,9 +76,14 @@ void Emontx4Component::handle_char_(uint8_t c) {
 }
 
 void Emontx4Component::parse_json_data_(){
-// TODO - add code in to check for exisence of the Data. Possible to specify the sensor
-// without the JSON being available
+    // JsonObject json_obj;
+    // JsonObject json_obj = root.createNestedObject("json_obj");
+
     json::parse_json(this->json_string_, [this](JsonObject json_data) {
+        this->json_obj_["MSG"] = json_data["MSG"];
+        // std::string message = json::build_json(this->json_obj);
+        // std::string message = json::build_json(json_data);
+        
         if (message_number_sensor_ != nullptr) {
             message_number_sensor_->publish_state(json_data["MSG"]);
         }
@@ -161,7 +166,12 @@ void Emontx4Component::parse_json_data_(){
             pulse_count_sensor_->publish_state(json_data["pulse"]);
         }
         if (pulse_energy_sensor_ != nullptr) {
-            pulse_energy_sensor_->publish_state(json_data["pulse"]);
+            // avoid divide zero error
+            if (float(json_data["pulse"]) > 0) {
+                pulse_energy_sensor_->publish_state(float(json_data["pulse"])/this->pulse_scale_);
+            } else {
+                pulse_energy_sensor_->publish_state(float(json_data["pulse"]));
+            }
         }
         if (t1_sensor_ != nullptr) {
             t1_sensor_->publish_state(float(json_data["T1"])*0.1);
@@ -172,8 +182,79 @@ void Emontx4Component::parse_json_data_(){
         if (t3_sensor_ != nullptr) {
             t3_sensor_->publish_state(float(json_data["T3"])*0.1);
         }
+        // if (json_data_sensor_ != nullptr) {
+        //     json_data_sensor_->publish_state(this->json_string_);
+        // }
         this->done_trigger_->trigger();
     });
+}
+
+void Emontx4Component::send_http_(){
+    
+// #include <WiFi.h>
+// #include <HTTPClient.h>
+// String serverName = "https://emoncms.org/input/post";
+// String line = "";
+// String data = "";
+// String sub = "";
+// int data_ready = 0;
+
+// void loop() {
+
+//   while (Serial1.available()) {
+  
+//     char c = char(Serial1.read());
+  
+//     if (c=='\n') {
+//         data = line;
+//         data.trim();
+//         line = "";
+        
+//         sub = data.substring(0, 3);
+//         if (sub=="MSG") {
+//             Serial.println(data);
+//             data_ready = 1;
+//         }
+//     } else {
+//         line = line + c; 
+//     }
+//   }
+
+//   //Send an HTTP POST request every 10 minutes
+//   if (data_ready) {
+//     data_ready = 0;
+//     //Check WiFi connection status
+//     if(WiFi.status()== WL_CONNECTED){
+//       HTTPClient http;
+
+//       String serverPath = serverName + "?node=pico2&data="+data+"&apikey=APIKEY";
+//       Serial.println(serverPath);
+      
+//       // Your Domain name with URL path or IP address with path
+//       http.begin(serverPath.c_str());
+      
+//       // Send HTTP GET request
+//       int httpResponseCode = http.GET();
+      
+//       if (httpResponseCode>0) {
+//         Serial.print("HTTP Response code: ");
+//         Serial.println(httpResponseCode);
+//         String payload = http.getString();
+//         Serial.println(payload);
+//       }
+//       else {
+//         Serial.print("Error code: ");
+//         Serial.println(httpResponseCode);
+//       }
+//       // Free resources
+//       http.end();
+//     }
+//     else {
+//       Serial.println("WiFi Disconnected");
+//     }
+//   }
+// }
+
 }
 
 }  // namespace emontx4

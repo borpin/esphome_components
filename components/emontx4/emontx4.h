@@ -42,6 +42,8 @@ class Emontx4Component : public Component, public uart::UARTDevice {
     void set_t1_sensor(sensor::Sensor *t1_sensor) { t1_sensor_ = t1_sensor; }
     void set_t2_sensor(sensor::Sensor *t2_sensor) { t2_sensor_ = t2_sensor; }
     void set_t3_sensor(sensor::Sensor *t3_sensor) { t3_sensor_ = t3_sensor; }
+    // void set_json_data_sensor(sensor::Sensor *json_data_sensor) { json_data_sensor_ = json_data_sensor; }
+    void set_pulse_scale(int scale){this->pulse_scale_ = scale; }
 
     Trigger<> *get_done_trigger() const { return done_trigger_; }
 
@@ -53,8 +55,11 @@ class Emontx4Component : public Component, public uart::UARTDevice {
   protected:
     void parse_json_data_();
     void handle_char_(uint8_t c);
+    void send_http_();
 
     Trigger<> *done_trigger_ = new Trigger<>();
+    JsonObject json_obj_;
+    int pulse_scale_ = 1;
 
     std::vector<uint8_t> rx_message_;
     std::string json_string_;
@@ -91,6 +96,7 @@ class Emontx4Component : public Component, public uart::UARTDevice {
     sensor::Sensor *t1_sensor_{nullptr};
     sensor::Sensor *t2_sensor_{nullptr};
     sensor::Sensor *t3_sensor_{nullptr};
+    // sensor::Sensor *json_data_sensor_{nullptr};
 };
 
 }  // namespace emontx4
